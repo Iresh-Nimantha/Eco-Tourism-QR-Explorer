@@ -13,7 +13,7 @@ export default function HeaderNav() {
             {/* Logo Image */}
             <div className="flex-shrink-0">
               <img
-                src="/logo.png"
+                src="/favicon.png"
                 alt="Dashboard Logo"
                 className="h-8 w-auto sm:h-10 lg:h-12 object-contain transition-all duration-200 hover:scale-105"
                 onError={(e) => {
@@ -54,7 +54,7 @@ export default function HeaderNav() {
                 Dashboard
               </h1>
               <p className="text-xs lg:text-sm text-slate-500 font-medium">
-                Eco Tourism QR Explorer
+                Eco Tourism
               </p>
             </div>
           </div>
