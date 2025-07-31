@@ -1,35 +1,33 @@
 // components/Navbar.tsx
-"use client"; 
+"use client";
 
 import { useState } from "react";
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; // 1. Import useRouter
+import { usePathname } from 'next/navigation';
 
 const navLinks = [
     { name: "Home", href: "/" },
     { name: "How it works", href: "/#how-it-works" },
-    { name: "Explore places", href: "/explore" },
+    { name: "Explore places", href: "/places-grid" },
     { name: "About us", href: "/#about" },
     // You'll need to create a /contact page for this link to work
     // { name: "Contact us", href: "/contact" },
 ];
 
 export default function Navbar() {
-    const [open, setOpen] = useState(false);
-    const router = useRouter(); // 2. Get router instance
-    const currentPath = router.pathname;
-
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname(); // ✅ get current path
     return (
         // --- FIX: Updated navbar theme to dark green ---
-        <nav className="fixed top-0 left-0 z-50 w-full border-b border-white/10 bg-emerald-900/90 shadow-lg backdrop-blur-md">
+        <nav className="w-full border-b border-white/10 bg-emerald-900/90 shadow-lg backdrop-blur-md">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-8">
                 {/* Left: Logo */}
-                <Link href="/" className="text-lg font-semibold text-white hover:text-emerald-100">
+                <Link href="/">
                     <div className="flex items-center space-x-3">
                         <Image
                             src="/logo.png"
-                            alt="Eco Tour Logo"
+                            alt="E"
                             width={40}
                             height={40}
                             className="object-contain"
@@ -42,7 +40,7 @@ export default function Navbar() {
                 <div className="hidden flex-1 justify-center md:flex">
                     <div className="flex space-x-8 font-medium text-[16px]">
                         {navLinks.map(link => {
-                            const isActive = currentPath === link.href;
+                            const isActive = pathname === link.href;
                             return (
                                 <Link key={link.href} href={link.href}>
                                     {/* --- FIX: Updated link styles with active state --- */}
@@ -79,7 +77,7 @@ export default function Navbar() {
                 <div className="border-t border-white/10 bg-emerald-900 shadow md:hidden">
                     <div className="flex flex-col space-y-3 py-4 px-5">
                         {navLinks.map((link) => {
-                            const isActive = currentPath === link.href;
+                            const isActive = pathname === link.href;
                             return (
                                 <Link key={link.href} href={link.href} onClick={() => setOpen(false)}>
                                     <span className={`block py-2 text-base font-medium transition-colors hover:text-white ${

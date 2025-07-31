@@ -6,6 +6,7 @@ import { db } from '../firebase/firebaseConfig';
 import { LocationData } from './types';
 import PlaceCard from './placeCard';
 import Footer from '../components/Footer';
+import Navbar from '../components/Navbar';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function ExplorePage() {
@@ -48,10 +49,11 @@ export default function ExplorePage() {
     const search = searchTerm.toLowerCase();
     return (
       place.locationName.toLowerCase().includes(search) ||
-      place.description?.toLowerCase().includes(search) ||
-      place.district?.toLowerCase().includes(search) ||
-      place.tags?.toLowerCase().includes(search)
-    );
+      place.description?.toLowerCase().includes(search));
+      //  ||
+      // place.district?.toLowerCase().includes(search) ||
+      // place.tags?.toLowerCase().includes(search)
+    
   });
 
   const totalPages = Math.ceil(filteredPlaces.length / itemsPerPage);
@@ -59,11 +61,15 @@ export default function ExplorePage() {
   const paginatedPlaces = filteredPlaces.slice(startIndex, startIndex + itemsPerPage);
 
   return (
+    <div className="pt-0">
+      <Navbar />
+      {/* Your content below */}
+    
     <div className="min-h-screen flex flex-col justify-between bg-white">
       <div className="p-4">
         {/* 🔠 Title */}
         <h2 className="text-2xl font-bold mb-4 text-center text-green-700">
-          Explore Eco-Tourism Places
+          
         </h2>
 
         {/* 🔍 Search */}
@@ -130,6 +136,7 @@ export default function ExplorePage() {
         </div>
       </div>
       <Footer />
+    </div>
     </div>
   );
 }
