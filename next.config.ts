@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "10mb",
+    },
+  },
   images: {
     remotePatterns: [
       {
@@ -21,9 +26,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-
   devIndicators: {
-    buildActivity: false, // <-- This disables the "N" icon in dev mode
+    buildActivity: false,
   },
 };
 
