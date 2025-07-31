@@ -1,0 +1,270 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Simple Low-Height Scrollbar Styles */
+
+/* ===== WEBKIT SCROLLBARS (Chrome, Safari, Edge) ===== */
+
+/* Main scrollbar dimensions - low height/width */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+/* Track background with padding */
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 3px;
+  margin: 3px; /* Creates padding effect */
+}
+
+/* Scrollbar handle/thumb - simple and low */
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+  min-height: 20px; /* Minimum thumb height */
+  border: 1px solid #f8fafc; /* Creates padding around thumb */
+}
+
+/* Hover effect */
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Corner styling */
+::-webkit-scrollbar-corner {
+  background: #f8fafc;
+}
+
+/* ===== FIREFOX SCROLLBARS ===== */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+
+/* ===== UTILITY CLASSES FOR DIFFERENT CONTEXTS ===== */
+
+/* Extra thin scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  margin: 2px;
+  padding: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  min-height: 15px;
+  border: 1px solid #f8fafc;
+}
+
+/* Green theme with padding */
+.scrollbar-green::-webkit-scrollbar-track {
+  background: #f0fdf4;
+  margin: 3px;
+}
+
+.scrollbar-green::-webkit-scrollbar-thumb {
+  background: #22c55e;
+  border: 1px solid #f0fdf4;
+  min-height: 20px;
+}
+
+.scrollbar-green::-webkit-scrollbar-thumb:hover {
+  background: #16a34a;
+}
+
+/* Modal scrollbar with more padding */
+.modal-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.modal-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+  margin: 8px; /* More padding for modals */
+}
+
+.modal-scroll::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 3px;
+  min-height: 18px;
+  border: 1px solid #f1f5f9;
+}
+
+/* Container with custom padding */
+.scroll-container {
+  padding-right: 8px; /* Creates space for scrollbar */
+  margin-right: -8px; /* Pulls content back */
+}
+
+.scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 3px;
+  margin: 2px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+  min-height: 20px;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    margin: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    min-height: 15px;
+    border: 1px solid #f8fafc;
+  }
+}
+
+@media (max-width: 480px) {
+  ::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+
+  ::-webkit-scrollbar-track {
+    margin: 1px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    min-height: 12px;
+  }
+}
+
+/* Custom styles */
+@layer base {
+  html {
+    font-family: system-ui, "Inter", sans-serif;
+    scroll-behavior: smooth;
+    /* Add padding to the top to offset for your fixed navbar */
+    /*scroll-padding-top: 5rem;  Adjust this value to your navbar's height */
+  }
+
+  body {
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 transform hover:scale-105 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition duration-200;
+  }
+
+  .form-input {
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+  }
+}
+
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slideIn {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s infinite;
+  }
+  /*logo max-size admin login*/
+  .logo-container {
+    width: 105px;
+    height: 105px;
+  }
+}
+
+/* Hide scrollbar for a clean card slider UI */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
