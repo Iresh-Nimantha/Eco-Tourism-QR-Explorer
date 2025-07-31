@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import LogoutButton from "./LogoutButton";
 
 export default function HeaderNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -89,7 +90,7 @@ export default function HeaderNav() {
             >
               <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 group-hover:w-full transition-all duration-300"></div>
             </a>
-            <a
+            {/* <a
               href="/logout"
               className="group relative px-3 lg:px-4 py-2 text-sm lg:text-base font-medium text-red-600 hover:text-red-700 transition-all duration-200 rounded-lg hover:bg-red-50"
             >
@@ -110,7 +111,10 @@ export default function HeaderNav() {
                 <span>Logout</span>
               </span>
               <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-red-500 to-red-600 group-hover:w-full transition-all duration-300"></div>
-            </a>
+            </a> */}
+            <div>
+              <LogoutButton />
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -190,7 +194,7 @@ export default function HeaderNav() {
               <span>Website</span>
             </a>
 
-            <a
+            {/* <a
               href="/logout"
               className="group flex items-center space-x-3 px-3 py-3 text-base font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
               onClick={() => setIsMobileMenuOpen(false)}
@@ -209,7 +213,10 @@ export default function HeaderNav() {
                 />
               </svg>
               <span>Logout</span>
-            </a>
+            </a> */}
+            <div>
+              <LogoutButton />
+            </div>
           </div>
         </div>
       </div>
