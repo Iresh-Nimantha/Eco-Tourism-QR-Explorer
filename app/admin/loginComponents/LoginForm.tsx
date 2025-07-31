@@ -116,15 +116,16 @@ export default function LoginForm() {
       <div className="relative max-w-md w-full mx-4 sm:mx-6 lg:mx-8 z-10">
         {/* Logo/Header Section */}
          <div className="text-center mb-8">
-          <div className={`mx-auto h-25 w-25 bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-2xl border-4 border-white/20 ${isClient ? 'transform rotate-3 hover:rotate-0 transition-all duration-300' : ''}`}>
-            <Image 
-              src={logo} 
-              alt="Logo" 
-              width={164} 
-              height={164} 
-              className="object-contain"
-            />
-          </div>
+          <div className={`mx-auto bg-gradient-to-br from-green-500 via-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-2xl border-4 border-white/20 ${isClient ? 'transform rotate-3 hover:rotate-0 transition-all duration-300' : ''}`} 
+            style={{ width: '105px', height: '105px' }}>
+              <Image 
+                src={logo} 
+                alt="Logo" 
+                width={100}
+                height={100}
+                className="object-contain"
+              />
+            </div>
           <h2 className="mt-1 text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-700 via-emerald-600 to-teal-700 tracking-tight py-1">
             Admin Login
           </h2>

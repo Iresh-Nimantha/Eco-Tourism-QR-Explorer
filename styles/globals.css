@@ -1,9 +1,17 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Custom styles */
 @layer base {
   html {
-    font-family: system-ui, sans-serif;
+    font-family:  system-ui,'Inter', sans-serif;
+    scroll-behavior: smooth;
+    /* Add padding to the top to offset for your fixed navbar */
+    /*scroll-padding-top: 5rem;  Adjust this value to your navbar's height */
   }
 
   body {
@@ -40,6 +48,24 @@
   
   .animate-pulse-slow {
     animation: pulse 3s infinite;
+  }
+   /*logo max-size admin login*/ 
+ .logo-container {
+   width: 105px ;
+   height: 105px ;
+ }
+}
+
+/* Hide scrollbar for a clean card slider UI */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
   }
 }
 
