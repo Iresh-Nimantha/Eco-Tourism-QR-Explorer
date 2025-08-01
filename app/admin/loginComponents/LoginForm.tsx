@@ -1,6 +1,6 @@
 'use client';
 
-import '@/styles/globals.css';
+import "../../globals.css";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
