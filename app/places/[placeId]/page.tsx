@@ -109,53 +109,34 @@ const ShareIcons = ({
 };
 
 // ------- Main Component -------
+
 type PlaceParamsObj = { placeId: string };
 type PlaceProps = {
-  params: PlaceParamsObj | Promise<PlaceParamsObj>;
+  params: PlaceParamsObj;
 };
 
 export default function PlaceDetail({ params }: PlaceProps) {
-  const [unwrappedParams, setUnwrappedParams] = useState<PlaceParamsObj | null>(
-    null
-  );
   const [place, setPlace] = useState<any>(null);
   const [relatedPlaces, setRelatedPlaces] = useState<LocationData[]>([]);
   const [currentUrl, setCurrentUrl] = useState("");
 
-  // Unwrap params Promise (Next.js 14+)
   useEffect(() => {
-    (async () => {
-      if (typeof (params as any).then === "function") {
-        setUnwrappedParams(await (params as Promise<PlaceParamsObj>));
-      } else {
-        setUnwrappedParams(params as PlaceParamsObj);
-      }
-    })();
-  }, [params]);
-
-  // Fetch place & related data when params is ready
-  useEffect(() => {
-    if (!unwrappedParams) return;
-
     async function fetchData() {
-      if (!unwrappedParams) return;
-      const placeData = await getPlaceData(unwrappedParams.placeId);
+      const placeData = await getPlaceData(params.placeId);
       setPlace(placeData);
 
       if (placeData) {
         const related = await getPlacesByDistrictOrTag(
           placeData.district ?? "",
           placeData.tags ?? "",
-          unwrappedParams.placeId
+          params.placeId
         );
         setRelatedPlaces(related);
       }
     }
     fetchData();
     setCurrentUrl(window.location.href);
-  }, [unwrappedParams]);
-
-  if (!unwrappedParams) return <div>Loading...</div>;
+  }, [params]);
 
   if (!place) {
     return (
@@ -180,9 +161,7 @@ export default function PlaceDetail({ params }: PlaceProps) {
           </h1>
           <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
             The place ID{" "}
-            <span className="font-semibold text-red-500">
-              {unwrappedParams.placeId}
-            </span>{" "}
+            <span className="font-semibold text-red-500">{params.placeId}</span>{" "}
             does not exist in our database.
           </p>
           <Link
