@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { districtData as cards } from '../data/districtData';
 
 // Reusable SVG Arrow Icon
 const SliderArrowIcon = ({ direction = 'right' }: { direction: 'left' | 'right' }) => {
@@ -12,6 +11,14 @@ const SliderArrowIcon = ({ direction = 'right' }: { direction: 'left' | 'right' 
   return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-6 w-6 text-black"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>;
 };
 
+// Card data and constants
+const cards = [
+    { image: '/1.jpg', title: 'Mirissa Beach', desc: 'Matara', href: '/location/mirissa' },
+    { image: '/2.jpg', title: 'Sigiriya Rock', desc: 'Dambulla', href: '/location/sigiriya' },
+    { image: '/3.jpg', title: 'Kandy Lake', desc: 'Kandy', href: '/location/kandy' },
+    { image: '/4.jpg', title: 'Ella Gap', desc: 'Badulla', href: '/location/ella' },
+    { image: '/5.jpg', title: 'Galle Fort', desc: 'Galle', href: '/location/galle' },
+];
 const CARD_WIDTH = 220;
 const CARD_MARGIN = 20;
 
@@ -106,8 +113,7 @@ const HeroSection = () => {
             }}
         >
             <div className="absolute inset-0 z-0 bg-black/40" />
-            {/* --- FIX: Added responsive top padding (pt) for better balance on larger screens --- */}
-            <div className="relative z-10 flex w-full flex-col items-center gap-y-12 pt-20 pb-10 md:pt-32 lg:pt-30">
+            <div className="relative z-10 flex w-full flex-col items-center gap-y-12 pt-20 pb-10">
                 <div className="flex w-full max-w-2xl flex-col items-center px-4 text-center">
                     <h1 className="mb-4 text-3xl font-semibold leading-tight tracking-tight text-white drop-shadow sm:text-4xl md:text-5xl lg:text-6xl">
                         Sri Lanka,
@@ -131,16 +137,18 @@ const HeroSection = () => {
                     >
                         {fullMobileCards.map((card, idx) => (
                             <div
-                                key={`${card.title}-${idx}`}
+                                key={idx}
                                 onClick={() => setBg(card.image)}
-                                className="group snap-center relative h-56 w-44 flex-shrink-0 cursor-pointer overflow-hidden rounded-2xl border-2 border-transparent bg-white/25 shadow-2xl backdrop-blur transition hover:border-emerald-600"
+                                className="group snap-center relative h-56 w-44 flex-shrink-0 cursor-pointer overflow-hidden rounded-2xl border-2 border-transparent bg-white/25 shadow-2xl backdrop-blur transition hover:border-blue-400"
                             >
                                 <img src={card.image} alt={card.title} className="h-full w-full object-cover" draggable={false} />
                                 <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent px-3 py-2">
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm font-semibold text-white">
                                             {card.title}
+                                            <span className="block text-[10px] font-normal">{card.desc}</span>
                                         </span>
+                                        {/* --- FIX: New Mobile Card Button Style --- */}
                                         <button
                                             className="ml-2 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md transition-all duration-300"
                                             onClick={(e) => { e.stopPropagation(); router.push(card.href); }}
@@ -174,14 +182,16 @@ const HeroSection = () => {
                             <div
                                 key={card.title + idx}
                                 onClick={() => setBg(card.image)}
-                                className="group relative h-80 w-[220px] flex-shrink-0 cursor-pointer overflow-hidden rounded-2xl border-2 border-transparent bg-white/20 shadow-2xl backdrop-blur transition hover:border-emerald-600"
+                                className="group relative h-80 w-[220px] flex-shrink-0 cursor-pointer overflow-hidden rounded-2xl border-2 border-transparent bg-white/20 shadow-2xl backdrop-blur transition hover:border-blue-400"
                             >
                                 <img src={card.image} alt={card.title} className="h-full w-full object-cover" draggable={false} />
                                 <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/90 to-transparent px-4 py-3">
                                     <div className="flex items-center justify-between">
-                                        <div className="text-lg font-semibold leading-snug text-white">
+                                        <div className="text-sm font-semibold leading-snug text-white">
                                             {card.title}
+                                            <span className="block text-xs font-normal">{card.desc}</span>
                                         </div>
+                                        {/* --- FIX: New Desktop Card Button with Professional Hover Effect --- */}
                                         <button
                                             className="ml-2 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white shadow-md transition-all duration-300 ease-in-out md:scale-90 md:opacity-0 group-hover:scale-100 group-hover:opacity-100"
                                             onClick={(e) => { e.stopPropagation(); router.push(card.href); }}
