@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import LogoutButton from "./LogoutButton";
+import Website from "../dashboard/Website";
 
 export default function HeaderNav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -62,28 +63,7 @@ export default function HeaderNav() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
-            <a
-              href="/"
-              className="group relative px-3 lg:px-4 py-2 text-sm lg:text-base font-medium text-slate-600 hover:text-slate-900 transition-all duration-200 rounded-lg hover:bg-slate-50"
-            >
-              <span className="flex items-center space-x-2">
-                <svg
-                  className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"
-                  />
-                </svg>
-                <span>Website</span>
-              </span>
-              <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 group-hover:w-full transition-all duration-300"></div>
-            </a>
+            <Website />
             <a
               href="/admin"
               className="group relative px-3 lg:px-4 py-2 text-sm lg:text-base font-medium text-slate-600 hover:text-slate-900 transition-all duration-200 rounded-lg hover:bg-slate-50"

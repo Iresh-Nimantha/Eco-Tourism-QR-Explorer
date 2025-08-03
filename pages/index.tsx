@@ -1,19 +1,34 @@
 // pages/index.tsx
+import Head from "next/head";
 
-import Navbar from '../components/Navbar';
-import HeroSection from '../components/HeroSection';
-import HowItWorksSection from '../components/HowItWorksSection';
-import AboutUsSection from '../components/AboutUsSection';
-import Footer from '../components/Footer'; // 1. Import the new component
+import Navbar from "../landing/Navbar";
+import HeroSection from "../landing/HeroSection";
+import HowItWorksSection from "../landing/HowItWorksSection";
+import AboutUsSection from "../landing/AboutUsSection";
+
+import Footer from "../landing/Footer"; // 1. Import the new component
+import EcoExplorerChat from "../app/admin/components/ChatWidget";
 
 export default function Home() {
   return (
-    <div className="bg-white">
-      <Navbar />
-      <HeroSection />
-      <HowItWorksSection />
-      <AboutUsSection />
-      <Footer /> {/* 2. Add it to the end of your page */}
-    </div>
+    <>
+      <Head>
+        <title>Eco Tourism</title>
+        <link rel="icon" href="/logo.png" type="image/png" />
+      </Head>
+      <div className="bg-white overflow-auto hide-scrollbar h-screen">
+        <Navbar />
+        <HeroSection />
+        <HowItWorksSection />
+        <AboutUsSection />
+        <EcoExplorerChat />
+        <Footer />
+      </div>
+    </>
   );
+}
+export async function getStaticProps() {
+  return {
+    props: {}, // No props needed for client-side component
+  };
 }

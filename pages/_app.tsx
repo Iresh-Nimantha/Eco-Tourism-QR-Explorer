@@ -1,8 +1,18 @@
 // pages/_app.tsx
-import '../app/globals.css'
-import type { AppProps } from 'next/app'
 
-function App({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />
+import Head from "next/head";
+import type { AppProps } from "next/app";
+import "../app/globals.css";
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <>
+      <Head>
+        <title>Your Site Title</title>
+        <link rel="icon" href="/favicon.png" />
+      </Head>
+      <Component {...pageProps} />
+    </>
+  );
 }
-export default App
+
+export default MyApp;

@@ -1,8 +1,10 @@
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "./firebase";
+import { db } from "../../app/lib/firebase/config";
 import { PlaceWithImage, PlaceData } from "@/src/types/place";
 
-export const getPlaceData = async (placeId: string): Promise<PlaceWithImage | null> => {
+export const getPlaceData = async (
+  placeId: string
+): Promise<PlaceWithImage | null> => {
   const docRef = doc(db, "locations", placeId);
   const docSnap = await getDoc(docRef);
 
@@ -20,7 +22,9 @@ export const getPlaceData = async (placeId: string): Promise<PlaceWithImage | nu
 
   // Case 2: Firebase-hosted image
   else if (customFilename) {
-    imageUrl = `https://firebasestorage.googleapis.com/v0/b/eco-tourism-qr-explorer.appspot.com/o/places%2F${encodeURIComponent(customFilename)}?alt=media`;
+    imageUrl = `https://firebasestorage.googleapis.com/v0/b/eco-tourism-qr-explorer.appspot.com/o/places%2F${encodeURIComponent(
+      customFilename
+    )}?alt=media`;
   }
 
   return {

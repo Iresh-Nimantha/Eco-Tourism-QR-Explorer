@@ -1,0 +1,85 @@
+/* chat.css */
+
+/* Ensure links are styled consistently */
+.chat-container a {
+  color: #1e90ff;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.chat-container a:hover {
+  color: #4682b4;
+}
+
+/* Custom styles for colored text */
+.chat-container .text-green {
+  color: #2e7d32; /* Green for eco-themed text */
+}
+
+.chat-container .text-blue {
+  color: #1e90ff; /* Blue for links or highlights */
+}
+
+.chat-container .text-red {
+  color: #d32f2f; /* Red for warnings or emphasis */
+}
+
+/* Ensure Markdown lists and other elements are styled */
+.chat-container ul,
+.chat-container ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.chat-container li {
+  margin-bottom: 0.25rem;
+}
+
+/* Improve readability for paragraphs */
+.chat-container p {
+  margin: 0.25rem 0;
+}
+
+/* Custom scrollbar for chat area */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #4caf50;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #388e3c;
+}
+
+/* Hide scrollbar but keep functionality */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Animation for chat window */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}

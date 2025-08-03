@@ -4,7 +4,7 @@ export const metadata = {
   title: "Eco Tourism",
   description: "Discover and share stunning eco-friendly travel locations.",
   icons: {
-    icon: "./logo.svg",
+    icon: "/favicon.png",
   },
 };
 
