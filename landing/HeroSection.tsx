@@ -1,7 +1,8 @@
 // components/HeroSection.tsx
-
+"use client";
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
+
 import { districtData as cards } from "../data/districtData";
 import Navbar from "./Navbar";
 

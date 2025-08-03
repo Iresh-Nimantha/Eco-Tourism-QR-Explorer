@@ -13,25 +13,15 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-<<<<<<< HEAD
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     },
-=======
->>>>>>> 31186843fa8a9845df05159cbb06f7eae7df9cff
     "plugins": [
       {
         "name": "next"
       }
-<<<<<<< HEAD
     ]
-=======
-    ],
-    "paths": {
-      "@/*": ["./*"]
-    }
->>>>>>> 31186843fa8a9845df05159cbb06f7eae7df9cff
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

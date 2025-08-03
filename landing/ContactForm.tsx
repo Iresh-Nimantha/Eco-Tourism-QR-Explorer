@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import emailjs from "@emailjs/browser"; // or "@emailjs/browser"
 import Swal from "sweetalert2";
