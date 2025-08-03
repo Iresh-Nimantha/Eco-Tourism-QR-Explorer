@@ -8,6 +8,7 @@ import AboutUsSection from "../landing/AboutUsSection";
 
 import Footer from "../landing/Footer"; // 1. Import the new component
 import EcoExplorerChat from "../app/admin/components/ChatWidget";
+import ContactForm from "@/landing/ContactForm";
 
 export default function Home() {
   return (
@@ -21,6 +22,7 @@ export default function Home() {
         <HeroSection />
         <HowItWorksSection />
         <AboutUsSection />
+        <ContactForm />
         <EcoExplorerChat />
         <Footer />
       </div>

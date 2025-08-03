@@ -106,7 +106,7 @@ export default function LoginForm() {
             Admin Login
           </h2>
           <p className="mt-1 text-xs sm:text-base font-medium text-gray-600 tracking-wide">
-            QR Code Tourism Management System
+            "Eco Tourism" Location Management System
           </p>
         </div>
         <div className="bg-white/90 backdrop-blur-xl py-6 px-4 sm:py-8 sm:px-6 shadow-xl rounded-2xl border border-white/50 relative overflow-hidden">
@@ -335,7 +335,7 @@ export default function LoginForm() {
                   d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                 />
               </svg>
-              Secure admin access for QR Code Tourism Management
+              Secure admin access for "Eco Tourism" Location Management
             </div>
           </div>
         </div>
