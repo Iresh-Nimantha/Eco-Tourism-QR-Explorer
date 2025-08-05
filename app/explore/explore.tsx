@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../lib/config"; // adjust path as needed
+import { db } from "../lib/firebase"; // adjust path as needed
 import { LocationData } from "../../landing/explore/places-grid/types";
 import PlaceCard from "../../landing/explore/places-grid/placeCard";
 import Footer from "../../landing/Footer";

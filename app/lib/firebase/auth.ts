@@ -4,7 +4,7 @@ import {
   onAuthStateChanged,
   User,
 } from "firebase/auth";
-import { auth } from "../config";
+import { auth } from "../firebase";
 
 export const signInWithEmail = async (email: string, password: string) => {
   try {

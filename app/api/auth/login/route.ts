@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/app/lib/config";
+import { auth } from "@/app/lib/firebase";
 import { generateToken, getCookieOptions } from "@/app/lib/auth/utils";
 
 export async function POST(request: NextRequest) {

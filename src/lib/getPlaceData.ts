@@ -1,5 +1,5 @@
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../app/lib/config";
+import { db } from "../../app/lib/firebase";
 import { PlaceWithImage, PlaceData } from "@/src/types/place";
 
 export const getPlaceData = async (

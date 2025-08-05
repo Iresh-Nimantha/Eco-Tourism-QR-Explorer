@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "../../lib/config"; // adjust path
+import { db } from "../../lib/firebase"; // adjust path
 import { doc, updateDoc } from "firebase/firestore";
 
 export async function POST(req: NextRequest) {
