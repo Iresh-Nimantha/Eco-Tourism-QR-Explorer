@@ -3,7 +3,7 @@ import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 
 // Import Firestore utils
-import { db } from "../../lib/firebase/config"; // adjust path as needed!
+import { db } from "../../lib/config"; // adjust path as needed!
 import { doc, deleteDoc } from "firebase/firestore";
 
 export async function DELETE(req: NextRequest) {

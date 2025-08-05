@@ -1,14 +1,18 @@
-import { 
-  signInWithEmailAndPassword, 
+import {
+  signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
-  User
-} from 'firebase/auth';
-import { auth } from './config';
+  User,
+} from "firebase/auth";
+import { auth } from "../config";
 
 export const signInWithEmail = async (email: string, password: string) => {
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
     return { user: userCredential.user, error: null };
   } catch (error: any) {
     return { user: null, error: error.message };

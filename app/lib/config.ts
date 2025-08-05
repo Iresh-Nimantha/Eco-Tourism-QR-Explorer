@@ -1,10 +1,7 @@
-// src/lib/firebase.ts
-
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// Firebase config purely from env variables
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -15,8 +12,17 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Prevent multiple initializations in dev/hot reload
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+if (!firebaseConfig.apiKey) {
+  throw new Error("Missing NEXT_PUBLIC_FIREBASE_API_KEY in env vars");
+}
+
+let app;
+try {
+  app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+} catch (error) {
+  console.error("Firebase initialization error:", error);
+  throw error;
+}
 
 const db = getFirestore(app);
 const auth = getAuth(app);

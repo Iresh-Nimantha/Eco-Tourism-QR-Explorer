@@ -1,5 +1,5 @@
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
-import { db } from "../../app/lib/firebase/config";
+import { db } from "../../app/lib/config";
 import { LocationData } from "@/landing/explore/places-grid/types";
 
 /**

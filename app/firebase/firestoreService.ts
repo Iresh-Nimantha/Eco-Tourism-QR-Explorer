@@ -1,5 +1,5 @@
 // firebase/firestoreService.ts
-import { db } from "../lib/firebase/config";
+import { db } from "../lib/config";
 import {
   collection,
   addDoc,
