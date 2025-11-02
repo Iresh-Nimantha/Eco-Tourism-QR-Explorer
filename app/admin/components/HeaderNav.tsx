@@ -1,128 +1,36 @@
-import React, { useState } from "react";
+"use client";
+import { useState } from "react";
+import LogoutButton from "./LogoutButton";
+import Website from "../dashboard/Website";
 
 export default function HeaderNav() {
-  const [activeLink, setActiveLink] = useState("");
-
-  const handleLinkClick = (linkName) => {
-    setActiveLink(linkName);
-  };
-
-  const handleLogout = (e) => {
-    e.preventDefault();
-    // SweetAlert2 confirmation for logout
-    if (window.Swal) {
-      window.Swal.fire({
-        title: "Logout Confirmation",
-        text: "Are you sure you want to logout?",
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonColor: "#10b981",
-        cancelButtonColor: "#6b7280",
-        confirmButtonText: "Yes, logout",
-        cancelButtonText: "Cancel",
-        background: "#f8fafc",
-        customClass: {
-          popup: "rounded-xl shadow-xl",
-          title: "text-gray-800 font-semibold",
-          content: "text-gray-600",
-        },
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.Swal.fire({
-            title: "Logged Out!",
-            text: "You have been successfully logged out.",
-            icon: "success",
-            confirmButtonColor: "#10b981",
-            timer: 2000,
-            showConfirmButton: false,
-            background: "#f8fafc",
-            customClass: {
-              popup: "rounded-xl shadow-xl",
-            },
-          });
-          // Here you would redirect to login page
-          // window.location.href = '/login';
-        }
-      });
-    } else {
-      // Fallback if SweetAlert2 is not loaded
-      if (confirm("Are you sure you want to logout?")) {
-        alert("Logged out successfully!");
-        // window.location.href = '/login';
-      }
-    }
-  };
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <>
-      {/* SweetAlert2 CDN */}
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.7.32/sweetalert2.all.min.js"></script>
-
-      <nav className="bg-gradient-to-r from-emerald-50 to-green-50 border-b-2 border-green-200 px-6 py-4 mb-8 rounded-lg shadow-sm">
-        <div className="flex justify-between items-center max-w-7xl mx-auto">
-          {/* Dashboard Title */}
+    <nav className="w-full bg-white/95 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16 lg:h-20">
+          {/* Logo + Brand Section */}
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-md">
-              <svg
-                className="w-5 h-5 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                />
-              </svg>
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">
-              Dashboard
-            </span>
-          </div>
-
-          {/* Navigation Links */}
-          <div className="flex items-center space-x-2">
-            <a
-              href="/"
-              onClick={() => handleLinkClick("website")}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-md ${
-                activeLink === "website"
-                  ? "bg-green-600 text-white shadow-lg"
-                  : "text-green-700 hover:bg-green-100 hover:text-green-800"
-              }`}
-            >
-              <div className="flex items-center space-x-2">
+            {/* Logo Image */}
+            <div className="flex-shrink-0">
+              <img
+                src="/favicon.png"
+                alt="Dashboard Logo"
+                className="h-8 w-auto sm:h-10 lg:h-12 object-contain transition-all duration-200 hover:scale-105"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = "none";
+                  if (target.nextElementSibling) {
+                    (target.nextElementSibling as HTMLElement).style.display =
+                      "flex";
+                  }
+                }}
+              />
+              {/* Fallback Logo Icon */}
+              <div className="hidden h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl items-center justify-center shadow-lg">
                 <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"
-                  />
-                </svg>
-                <span>Website</span>
-              </div>
-            </a>
-
-            <a
-              href="/admin"
-              onClick={() => handleLinkClick("locations")}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-md ${
-                activeLink === "locations"
-                  ? "bg-green-600 text-white shadow-lg"
-                  : "text-green-700 hover:bg-green-100 hover:text-green-800"
-              }`}
-            >
-              <div className="flex items-center space-x-2">
-                <svg
-                  className="w-4 h-4"
+                  className="h-5 w-5 sm:h-6 sm:w-6 lg:h-7 lg:w-7 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -140,17 +48,35 @@ export default function HeaderNav() {
                     d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                   />
                 </svg>
-                <span>View Locations</span>
               </div>
-            </a>
+            </div>
+            {/* Brand Text (always visible) */}
+            <div>
+              <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                Dashboard
+              </h1>
+              <p className="text-xs lg:text-sm text-slate-500 font-medium">
+                Eco Tourism
+              </p>
+            </div>
+          </div>
 
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 rounded-lg font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-300 transform hover:scale-105 hover:shadow-md border border-red-200 hover:border-red-300"
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
+            <Website />
+            <a
+              href="/admin"
+              className="group relative px-3 lg:px-4 py-2 text-sm lg:text-base font-medium text-slate-600 hover:text-slate-900 transition-all duration-200 rounded-lg hover:bg-slate-50"
             >
-              <div className="flex items-center space-x-2">
+              <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 group-hover:w-full transition-all duration-300"></div>
+            </a>
+            {/* <a
+              href="/logout"
+              className="group relative px-3 lg:px-4 py-2 text-sm lg:text-base font-medium text-red-600 hover:text-red-700 transition-all duration-200 rounded-lg hover:bg-red-50"
+            >
+              <span className="flex items-center space-x-2">
                 <svg
-                  className="w-4 h-4"
+                  className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -163,14 +89,117 @@ export default function HeaderNav() {
                   />
                 </svg>
                 <span>Logout</span>
-              </div>
+              </span>
+              <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-red-500 to-red-600 group-hover:w-full transition-all duration-300"></div>
+            </a> */}
+            <div>
+              <LogoutButton />
+            </div>
+          </div>
+
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="inline-flex items-center justify-center p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200"
+              aria-expanded={isMobileMenuOpen ? "true" : "false"}
+            >
+              <span className="sr-only">Open main menu</span>
+              {!isMobileMenuOpen ? (
+                <svg
+                  className="block h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="block h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              )}
             </button>
           </div>
         </div>
 
-        {/* Active indicator line */}
-        <div className="mt-2 h-0.5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full opacity-50"></div>
-      </nav>
-    </>
+        {/* Mobile Menu */}
+        <div
+          className={`md:hidden transition-all duration-300 ease-in-out ${
+            isMobileMenuOpen
+              ? "max-h-96 opacity-100"
+              : "max-h-0 opacity-0 overflow-hidden"
+          }`}
+        >
+          <div className="px-2 pt-2 pb-6 space-y-1 bg-white border-t border-slate-200">
+            {/* Mobile Brand (always shown in main row now, so you can remove here if redundant) */}
+            {/* <div className="sm:hidden px-3 py-2">
+              <h2 className="text-lg font-bold text-slate-900">Dashboard</h2>
+              <p className="text-sm text-slate-500">Eco Tourism QR Explorer</p>
+            </div> */}
+
+            <a
+              href="/"
+              className="group flex items-center space-x-3 px-3 py-3 text-base font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-all duration-200"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <svg
+                className="w-5 h-5 group-hover:scale-110 transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"
+                />
+              </svg>
+              <span>Website</span>
+            </a>
+
+            {/* <a
+              href="/logout"
+              className="group flex items-center space-x-3 px-3 py-3 text-base font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <svg
+                className="w-5 h-5 group-hover:scale-110 transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1"
+                />
+              </svg>
+              <span>Logout</span>
+            </a> */}
+            <div>
+              <LogoutButton />
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
   );
 }

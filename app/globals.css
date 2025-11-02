@@ -1,5 +1,9 @@
 @import "tailwindcss";
+html {
+  scroll-behavior: smooth;
+}
 
+/* Root theme colors */
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -12,9 +16,289 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+  }
+}
+
+/* ----------------------------------------- */
+/* Animations */
+/* ----------------------------------------- */
+
+/* Fade In scale */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Scroll animation */
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Slide In */
+@keyframes slideIn {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Fade In translateY */
+@keyframes fadeInTranslateY {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pulse */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+.animate-pulse-slow {
+  animation: pulse 3s infinite;
+}
+
+/* ----------------------------------------- */
+/* Scrollbar Styles */
+/* ----------------------------------------- */
+
+/* Custom scrollbar base styles */
+.custom-scrollbar {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #cbd5e1 #f8fafc;
+  -ms-overflow-style: auto; /* IE 10+ default */
+}
+/* Webkit scrollbars (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+  margin: 3px; /* padding effect */
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #10b981, #059669);
+  border-radius: 10px;
+  min-height: 20px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #059669, #047857);
+}
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: #f1f5f9;
+}
+
+/* Thin scrollbar variant */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  margin: 2px;
+  padding: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  min-height: 15px;
+  border: 1px solid #f8fafc;
+}
+
+/* Green theme scrollbar variant */
+.scrollbar-green::-webkit-scrollbar-track {
+  background: #f0fdf4;
+  margin: 3px;
+}
+.scrollbar-green::-webkit-scrollbar-thumb {
+  background: #22c55e;
+  border: 1px solid #f0fdf4;
+  min-height: 20px;
+}
+.scrollbar-green::-webkit-scrollbar-thumb:hover {
+  background: #16a34a;
+}
+
+/* Modal scrollbar variant with more padding */
+.modal-scroll::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.modal-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+  margin: 8px;
+}
+.modal-scroll::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 3px;
+  min-height: 18px;
+  border: 1px solid #f1f5f9;
+}
+
+/* Scroll container padding for scrollbar */
+.scroll-container {
+  padding-right: 8px; /* space for scrollbar */
+  margin-right: -8px; /* pull content back */
+}
+.scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-container::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 3px;
+  margin: 2px;
+}
+.scroll-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+  min-height: 20px;
+}
+
+/* ----------------------------------------- */
+/* Scrollbar hide (hide scrollbar, keep scroll) */
+/* ----------------------------------------- */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* ----------------------------------------- */
+/* Responsive scrollbar adjustments */
+/* ----------------------------------------- */
+@media (max-width: 768px) {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    margin: 2px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    min-height: 15px;
+    border: 1px solid #f8fafc;
+  }
+}
+@media (max-width: 480px) {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    margin: 1px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    min-height: 12px;
+  }
+}
+
+/* ----------------------------------------- */
+/* Global Scrollbar hiding - Hide scrollbars globally but keep scrolling functional */
+/* ----------------------------------------- */
+
+/* For all scrollable elements */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* ----------------------------------------- */
+/* Global Base Styles */
+/* ----------------------------------------- */
+@layer base {
+  html {
+    font-family: system-ui, "Inter", sans-serif;
+    scroll-behavior: smooth;
+    /* Optional: padding-top if you have a fixed navbar */
+    /* scroll-padding-top: 5rem; */
+  }
+  body {
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* ----------------------------------------- */
+/* Component Layer */
+/* ----------------------------------------- */
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-green-500 to-emerald-600
+      hover:from-green-600 hover:to-emerald-700
+      text-white font-medium py-2 px-4 rounded-lg
+      transition duration-200 transform
+      hover:scale-105 active:scale-95;
+  }
+  .btn-secondary {
+    @apply bg-white hover:bg-gray-50
+      text-gray-700 font-medium py-2 px-4 rounded-lg
+      border border-gray-300
+      transition duration-200;
+  }
+  .form-input {
+    @apply block w-full px-3 py-2 border border-gray-300 rounded-lg
+      focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent
+      transition duration-200;
+  }
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+  }
+  /* Admin/Login - Logo size */
+  .logo-container {
+    width: 105px;
+    height: 105px;
+  }
+}
+
+/* ----------------------------------------- */
+/* Utility Layer */
+/* ----------------------------------------- */
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  .animate-slideIn {
+    animation: slideIn 0.3s ease-out;
+  }
+  .animate-pulse-slow {
+    animation: pulse 3s infinite;
   }
 }

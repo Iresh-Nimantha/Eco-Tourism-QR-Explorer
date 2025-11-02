@@ -1,0 +1,85 @@
+/* chat.css */
+
+/* Links styles */
+.chat-container a {
+  color: #1e90ff;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.chat-container a:hover {
+  color: #4682b4;
+}
+
+/* Colored text styles */
+.chat-container .text-green {
+  color: #2e7d32; /* eco-themed green */
+}
+
+.chat-container .text-blue {
+  color: #1e90ff; /* blue highlight */
+}
+
+.chat-container .text-red {
+  color: #d32f2f; /* red for warnings */
+}
+
+/* Lists */
+.chat-container ul,
+.chat-container ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.chat-container li {
+  margin-bottom: 0.25rem;
+}
+
+/* Paragraph readability */
+.chat-container p {
+  margin: 0.25rem 0;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #4caf50;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #388e3c;
+}
+
+/* Hide scrollbar but keep scroll behavior */
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Slide-up animation */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}

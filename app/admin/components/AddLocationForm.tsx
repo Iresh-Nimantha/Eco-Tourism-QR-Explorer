@@ -1,7 +1,11 @@
 "use client";
-import { useRef, useState } from "react";
-import { addLocationToFirebase } from "../../firebase/firestoreService"; // adjust import path as needed
-import HeaderNav from "./HeaderNav";
+
+import React, { useRef, useState } from "react";
+import Swal from "sweetalert2";
+import {
+  addLocationToFirebase,
+  type LocationData,
+} from "../../firebase/firestoreService";
 
 type FormState = {
   locationName: string;
@@ -15,12 +19,11 @@ export default function AddLocationForm({
   onAdd,
 }: {
   onClose: () => void;
-  onAdd?: () => void;
+  onAdd: () => void;
 }) {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const [generatedName, setGeneratedName] = useState<string>("");
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [form, setForm] = useState<FormState>({
@@ -45,29 +48,40 @@ export default function AddLocationForm({
     return `image_${year}${month}${day}_${hour}${min}${sec}_${rand}.${ext}`;
   }
 
-  const handleImageSelect = (file: File) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    handleFileChange(file);
+  };
+
+  const handleFileChange = (file: File | null) => {
     setImage(file);
     if (file) {
       const newName = generateImageName(file);
       setGeneratedName(newName);
-      setMessage(`Selected: ${file.name} ➔ Will be saved as: ${newName}`);
-
-      // Create preview
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
+      reader.onload = (e) => setImagePreview(e.target?.result as string);
       reader.readAsDataURL(file);
     } else {
       setGeneratedName("");
-      setMessage("");
       setImagePreview("");
     }
   };
 
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleImageSelect(file);
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
+    else if (e.type === "dragleave") setDragActive(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileChange(e.dataTransfer.files[0]);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
   };
 
   const handleInput = (
@@ -79,343 +93,121 @@ export default function AddLocationForm({
     }));
   };
 
-  // Drag and drop handlers
-  const handleDragEnter = (e: React.DragEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-    setDragActive(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      const file = files[0];
-      if (file.type.startsWith("image/")) {
-        handleImageSelect(file);
-      }
-    }
-  };
-
-  // SweetAlert2 integration for success/error messages
-  const showAlert = (
-    type: "success" | "error",
-    title: string,
-    text: string
-  ) => {
-    if (typeof window !== "undefined" && (window as any).Swal) {
-      (window as any).Swal.fire({
-        icon: type,
-        title: title,
-        text: text,
-        confirmButtonColor: type === "success" ? "#059669" : "#DC2626",
-        background: "#ffffff",
-        color: "#374151",
-        showConfirmButton: false,
-        timer: type === "success" ? 3000 : undefined,
-        timerProgressBar: true,
-      });
-    }
-  };
-
-  const onSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    setMessage("");
-
     if (!image || !generatedName) {
-      setMessage("Please select an image.");
-      showAlert("error", "Missing Image", "Please select an image to upload.");
-      return;
-    }
-
-    if (!form.locationName.trim()) {
-      showAlert("error", "Missing Information", "Location name is required.");
+      Swal.fire({
+        title: "Missing Image",
+        text: "Please select or upload an image.",
+        icon: "warning",
+        confirmButtonColor: "#059669",
+        background: "#fff",
+        color: "#374151",
+        customClass: { popup: "rounded-xl shadow-2xl" },
+      });
       return;
     }
 
     setLoading(true);
 
     try {
-      // 1. Upload the image file to /api/adminupload (saves to /public/uploads)
+      // Upload image to API
       const formData = new FormData();
       formData.append("file", image);
       formData.append("customFilename", generatedName);
+      formData.append("locationName", form.locationName);
+      formData.append("description", form.description);
+      formData.append("tags", form.tags);
+      formData.append("credit", form.credit);
 
       const imgRes = await fetch("/api/adminupload", {
         method: "POST",
         body: formData,
       });
+
       const imgResult = await imgRes.json();
+      if (!imgRes.ok || !imgResult.success)
+        throw new Error(
+          "Image upload failed: " + (imgResult.error || imgRes.statusText)
+        );
 
-      if (!imgRes.ok || !imgResult.success) {
-        const errorMsg =
-          "Image upload failed: " + (imgResult.error || imgRes.statusText);
-        setMessage(errorMsg);
-        showAlert("error", "Upload Failed", errorMsg);
-        setLoading(false);
-        return;
-      }
+      const imageUrl = imgResult.imageUrl;
 
-      // 2. After successful image upload, save metadata to Firestore
       const locationDoc = {
         locationName: form.locationName,
         description: form.description,
         customFilename: generatedName,
         credit: form.credit,
         tags: form.tags,
+        imageUrl,
       };
+      console.log("Location Document:", imageUrl);
       await addLocationToFirebase(locationDoc);
 
-      setMessage("Location and image uploaded successfully!");
-      showAlert(
-        "success",
-        "Success!",
-        "Location and image uploaded successfully!"
-      );
+      await Swal.fire({
+        title: "Location Added!",
+        text: "Location and image uploaded successfully!",
+        icon: "success",
+        confirmButtonColor: "#059669",
+        background: "#fff",
+        color: "#374151",
+        customClass: { popup: "rounded-xl shadow-2xl" },
+      });
 
-      // Reset form
       setImage(null);
       setImagePreview("");
       setGeneratedName("");
       setForm({ locationName: "", tags: "", description: "", credit: "" });
       if (imageInputRef.current) imageInputRef.current.value = "";
-
-      // Call onAdd callback if provided
-      setTimeout(() => {
-        if (onAdd) onAdd();
-        onClose();
-      }, 1500);
-    } catch (error) {
-      const errorMsg = "Error uploading file.";
-      setMessage(errorMsg);
-      showAlert("error", "Error", errorMsg);
-      console.error(error);
+      onAdd();
+      onClose();
+    } catch (error: any) {
+      await Swal.fire({
+        title: "Error",
+        text: error?.message || "Error uploading file.",
+        icon: "error",
+        confirmButtonColor: "#DC2626",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const removeImage = () => {
-    setImage(null);
-    setImagePreview("");
-    setGeneratedName("");
-    setMessage("");
-    if (imageInputRef.current) imageInputRef.current.value = "";
-  };
-
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 overflow-hidden">
-      {/* SweetAlert2 CDN */}
-      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-      {/* Header with Close Button */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-green-100 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-            <svg
-              className="w-5 h-5 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">
-              Add New Location
-            </h2>
-            <p className="text-sm text-gray-600">
-              Share a beautiful place with the world
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={onClose}
-          className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-        >
-          <svg
-            className="w-4 h-4 text-gray-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
+    <div className="w-full h-full relative">
+      {/* Animated Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute -top-40 -right-40 w-72 h-72 bg-gradient-to-br from-blue-200/30 to-indigo-200/30 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-green-200/30 to-emerald-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
-
-      {/* Main Content - Scrollable */}
-      <div className="flex-1 overflow-y-auto">
-        <form onSubmit={onSubmit} className="p-6 space-y-6 max-w-2xl mx-auto">
-          {/* Image Upload Section */}
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-green-200 shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <svg
-                className="w-5 h-5 mr-2 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              Upload Image
+      {/* Main Form */}
+      <div className="relative w-full h-full z-10">
+        <form
+          className="w-full h-full max-w-4xl mx-auto p-4 sm:p-8 lg:p-10 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-7 overflow-y-auto font-sans"
+          onSubmit={onSubmit}
+        >
+          {/* Left */}
+          <div className="flex flex-col gap-6">
+            <h3 className="text-2xl sm:text-3xl font-bold text-green-700 mb-2 text-center md:text-left">
+              Add Location
             </h3>
-
-            {!imagePreview ? (
-              <div
-                className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
-                  dragActive
-                    ? "border-green-500 bg-green-50"
-                    : "border-gray-300 hover:border-green-400 hover:bg-green-50/50"
-                }`}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-              >
-                <div className="w-16 h-16 mx-auto mb-4 text-gray-400">
-                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                    />
-                  </svg>
-                </div>
-                <p className="text-lg font-medium text-gray-700 mb-2">
-                  Drop your image here, or{" "}
-                  <span
-                    className="text-green-600 hover:text-green-700 cursor-pointer underline"
-                    onClick={() => imageInputRef.current?.click()}
-                  >
-                    browse
-                  </span>
-                </p>
-                <p className="text-sm text-gray-500">
-                  Supports JPG, PNG, and other image formats
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="relative rounded-xl overflow-hidden bg-gray-100">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-64 object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={removeImage}
-                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
-                {generatedName && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <p className="text-sm text-green-800">
-                      <span className="font-medium">Generated filename:</span>{" "}
-                      {generatedName}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileInput}
-              className="hidden"
-            />
-          </div>
-
-          {/* Form Fields */}
-          <div className="bg-white/60 backdrop-blur-sm rounded-2xl border border-green-200 shadow-lg p-6 space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <svg
-                className="w-5 h-5 mr-2 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-              Location Details
-            </h3>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Location Name *
+              <label className="text-green-900 font-semibold block mb-2 text-base sm:text-lg">
+                Location Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 name="locationName"
                 value={form.locationName}
                 onChange={handleInput}
+                className="w-full border-2 border-green-200 rounded-lg px-4 py-3 text-base sm:text-lg focus:ring-2 focus:ring-green-100 focus:border-green-500 transition"
+                placeholder="Location Name"
                 required
-                placeholder="Enter the location name..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white/80"
+                disabled={loading}
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="text-green-900 font-semibold block mb-2 text-base sm:text-lg">
                 Tags
               </label>
               <input
@@ -423,110 +215,164 @@ export default function AddLocationForm({
                 name="tags"
                 value={form.tags}
                 onChange={handleInput}
-                placeholder="beach, sunset, nature (comma-separated)"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white/80"
+                className="w-full border-2 border-green-200 rounded-lg px-4 py-3 text-base sm:text-lg focus:ring-2 focus:ring-green-100 focus:border-green-500 transition"
+                placeholder="Tags, e.g. restaurant, park"
+                disabled={loading}
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={handleInput}
-                rows={4}
-                placeholder="Describe this beautiful location..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all resize-none bg-white/80"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Photo Credit
+              <label className="text-green-900 font-semibold block mb-2 text-base sm:text-lg">
+                Photo Credit (Optional)
               </label>
               <input
                 type="text"
                 name="credit"
                 value={form.credit}
                 onChange={handleInput}
-                placeholder="Photographer name or source..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all bg-white/80"
+                className="w-full border-2 border-green-200 rounded-lg px-4 py-3 text-base sm:text-lg focus:ring-2 focus:ring-green-100 focus:border-green-500 transition"
+                placeholder="Photo by John Doe"
+                disabled={loading}
               />
             </div>
           </div>
-
-          {/* Status Message */}
-          {message && (
-            <div
-              className={`p-4 rounded-xl border ${
-                message.includes("successfully")
-                  ? "bg-green-50 border-green-200 text-green-800"
-                  : "bg-red-50 border-red-200 text-red-800"
-              }`}
-            >
-              <p className="text-sm font-medium">{message}</p>
+          {/* Right */}
+          <div className="flex flex-col gap-7">
+            <div>
+              <label className="text-green-900 font-semibold block mb-2 text-base sm:text-lg">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={handleInput}
+                className="w-full min-h-[100px] border-2 border-green-200 rounded-lg px-4 py-3 text-base sm:text-lg focus:ring-2 focus:ring-green-100 focus:border-green-500 transition resize-none"
+                placeholder="Description"
+                disabled={loading}
+              />
             </div>
-          )}
-
-          {/* Submit Button */}
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || !image || !form.locationName.trim()}
-              className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center"
-            >
-              {loading ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <svg
-                    className="w-4 h-4 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  Add Location
-                </>
-              )}
-            </button>
+            <div>
+              <label className="text-green-900 font-semibold block mb-2 text-base sm:text-lg">
+                Image Upload <span className="text-red-500">*</span>
+              </label>
+              <div
+                className={`
+                  relative border-2 border-dashed rounded-2xl transition
+                  ${
+                    dragActive
+                      ? "border-emerald-400 bg-emerald-50/80 shadow-2xl scale-[1.02]"
+                      : image
+                      ? "border-emerald-300 bg-emerald-50/50 shadow-lg"
+                      : "border-slate-300 bg-slate-50/85 hover:border-emerald-400 hover:bg-emerald-50/40 hover:shadow-lg"
+                  }
+                  flex flex-col items-center cursor-pointer group
+                `}
+                onDragEnter={handleDrag}
+                onDragOver={handleDrag}
+                onDragLeave={handleDrag}
+                onDrop={handleDrop}
+                onClick={() => imageInputRef.current?.click()}
+                style={{ minHeight: 160 }}
+              >
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageSelect}
+                  disabled={loading}
+                />
+                <div className="py-8 px-4 w-full flex flex-col items-center text-center">
+                  {imagePreview ? (
+                    <div className="space-y-4">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="mx-auto w-40 h-32 rounded-xl border border-green-200 object-cover shadow-lg"
+                      />
+                      <div className="font-bold text-slate-800 text-base">
+                        {image?.name}
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        Saved as:{" "}
+                        <span className="font-mono">{generatedName}</span>
+                      </div>
+                      <div className="text-sm text-green-600 font-medium">
+                        Click or drop to change photo
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="w-14 h-14 mx-auto bg-gradient-to-tr from-green-100 to-emerald-200 rounded-xl flex items-center justify-center mb-3">
+                        <svg
+                          className="w-8 h-8 text-green-500"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="font-bold text-slate-800">
+                        Drag and drop a photo here
+                      </div>
+                      <div className="text-sm text-green-700 font-medium">
+                        or <span className="underline">click to browse</span>
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        JPG, PNG, WebP. Max 10MB.
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 mt-1">
+              <button
+                type="submit"
+                className="w-full sm:w-auto flex items-center justify-center bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl px-6 sm:px-8 py-3 sm:py-4 font-bold text-base sm:text-lg shadow-lg transition hover:scale-105 focus:ring-2 focus:ring-green-100 focus:outline-none disabled:opacity-60"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <svg
+                      className="animate-spin h-6 w-6 mr-2"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Creating...
+                  </>
+                ) : (
+                  "Add Location"
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-full sm:w-auto flex items-center justify-center bg-white border-2 border-green-300 text-green-700 rounded-xl px-6 sm:px-8 py-3 sm:py-4 font-bold text-base sm:text-lg shadow hover:bg-green-50 focus:ring-2 focus:ring-green-100 focus:outline-none transition"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </form>
       </div>

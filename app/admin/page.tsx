@@ -1,105 +1,53 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import HeaderNav from "./components/HeaderNav";
 import SortMenuButton from "./components/SortMenuButton";
 import DashboardItemCard from "./components/DashboardItemCard";
 import FloatingAddButton from "./components/FloatingAddButton";
 import AddLocationForm from "./components/AddLocationForm";
-import { fetchLocationsFromFirebase } from "../firebase/firestoreService";
+import {
+  fetchLocationsFromFirebase,
+  deleteLocationFromFirebase,
+} from "../firebase/firestoreService";
 
-type Location = {
+import type { LocationData } from "../firebase/firestoreService";
+
+interface Location extends LocationData {
   id: string;
-  locationName: string;
-  tags: string;
-  description: string;
-  credit: string;
-  customFilename: string;
-  createdAt?: string;
-};
-
-type SortOption = "name-asc" | "name-desc" | "date-newest" | "date-oldest";
+}
 
 export default function AdminDashboard() {
   const [items, setItems] = useState<Location[]>([]);
-  const [filteredItems, setFilteredItems] = useState<Location[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [sortBy, setSortBy] = useState<SortOption>("date-newest");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [sort, setSort] = useState(""); // name, newest, tags...
+  const [search, setSearch] = useState("");
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Fetch locations on mount and after add
+  const fetchLocations = async () => {
+    setLoading(true);
+    try {
+      const locations = await fetchLocationsFromFirebase();
+      setItems(locations as Location[]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchLocations();
   }, []);
 
-  useEffect(() => {
-    // Filter and sort items whenever items, sortBy, or searchQuery changes
-    let filtered = items;
-
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = items.filter(
-        (item) =>
-          item.locationName.toLowerCase().includes(query) ||
-          item.description.toLowerCase().includes(query) ||
-          item.tags.toLowerCase().includes(query) ||
-          item.credit.toLowerCase().includes(query)
-      );
-    }
-
-    // Apply sorting
-    const sorted = [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case "name-asc":
-          return a.locationName.localeCompare(b.locationName);
-        case "name-desc":
-          return b.locationName.localeCompare(a.locationName);
-        case "date-newest":
-          return (
-            new Date(b.createdAt || "").getTime() -
-            new Date(a.createdAt || "").getTime()
-          );
-        case "date-oldest":
-          return (
-            new Date(a.createdAt || "").getTime() -
-            new Date(b.createdAt || "").getTime()
-          );
-        default:
-          return 0;
-      }
-    });
-
-    setFilteredItems(sorted);
-  }, [items, sortBy, searchQuery]);
-
-  const fetchLocations = async () => {
-    setIsLoading(true);
-    try {
-      const locations = await fetchLocationsFromFirebase();
-      setItems(locations as Location[]);
-    } catch (error) {
-      console.error("Failed to fetch locations:", error);
-      if (window.Swal) {
-        window.Swal.fire({
-          title: "Error",
-          text: "Failed to fetch locations. Please try again.",
-          icon: "error",
-          confirmButtonColor: "#ef4444",
-        });
-      } else {
-        alert("Failed to fetch locations");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleAdd = async () => {
+  const handleAdd = async (): Promise<void> => {
     setIsSheetOpen(false);
     await fetchLocations();
   };
 
-  const handleDelete = async (item: Location) => {
+  // Delete location with confirmation
+  const handleDelete = async (item: Location): Promise<void> => {
+    if (!confirm("Delete this location and its image?")) return;
+    setLoading(true);
     try {
       const res = await fetch("/api/delete-location", {
         method: "DELETE",
@@ -110,198 +58,148 @@ export default function AdminDashboard() {
         }),
       });
       if (res.ok) {
-        setItems(items.filter((i) => i.id !== item.id));
-      } else {
-        throw new Error("Delete failed");
-      }
-    } catch (error) {
-      console.error("Delete error:", error);
-      if (window.Swal) {
-        window.Swal.fire({
-          title: "Error",
-          text: "Failed to delete location. Please try again.",
-          icon: "error",
-          confirmButtonColor: "#ef4444",
-        });
+        setItems((prev) => prev.filter((i) => i.id !== item.id));
       } else {
         alert("Failed to delete location/image.");
       }
+    } catch (error) {
+      alert("Error deleting location/image.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleUpdate = (updatedItem: Location) => {
-    setItems(
-      items.map((item) => (item.id === updatedItem.id ? updatedItem : item))
-    );
-  };
+  // ESC to close modal
+  useEffect(() => {
+    if (!isSheetOpen) return;
+    const escHandler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsSheetOpen(false);
+    };
+    window.addEventListener("keydown", escHandler);
+    return () => window.removeEventListener("keydown", escHandler);
+  }, [isSheetOpen]);
+
+  // Click outside modal to close
+  useEffect(() => {
+    if (!isSheetOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        setIsSheetOpen(false);
+      }
+    };
+    window.addEventListener("mousedown", handleClick);
+    return () => window.removeEventListener("mousedown", handleClick);
+  }, [isSheetOpen]);
+
+  // Filtering and sorting
+  const filteredItems = useMemo(() => {
+    let result = items;
+    if (search) {
+      const s = search.toLowerCase();
+      result = result.filter(
+        (item) =>
+          item.locationName.toLowerCase().includes(s) ||
+          item.tags?.toLowerCase().includes(s) ||
+          item.description?.toLowerCase().includes(s) ||
+          item.credit?.toLowerCase().includes(s)
+      );
+    }
+    if (sort === "name") {
+      result = [...result].sort((a, b) =>
+        a.locationName.localeCompare(b.locationName)
+      );
+    } else if (sort === "newest") {
+      result = [...result].sort((a, b) => b.id.localeCompare(a.id));
+    } else if (sort === "oldest") {
+      result = [...result].sort((a, b) => a.id.localeCompare(b.id));
+    } else if (sort === "tags") {
+      result = [...result].sort((a, b) =>
+        (a.tags || "").localeCompare(b.tags || "")
+      );
+    } else if (sort === "credit") {
+      result = [...result].sort((a, b) =>
+        (a.credit || "").localeCompare(b.credit || "")
+      );
+    }
+    return result;
+  }, [items, search, sort]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 relative">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-30 pointer-events-none z-0">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at 25px 25px, rgba(5, 150, 105, 0.1) 2px, transparent 0)`,
-            backgroundSize: "50px 50px",
-          }}
-        ></div>
+    <div className="min-h-screen min-w-full bg-white relative">
+      <HeaderNav />
+
+      <div className="my-6">
+        <SortMenuButton
+          sort={sort}
+          onSortChange={setSort}
+          search={search}
+          onSearchChange={setSearch}
+          count={filteredItems.length}
+        />
       </div>
 
-      {/* Content/Main */}
-      <div className="relative z-10">
-        <HeaderNav />
-        <div className="px-4 sm:px-6 lg:px-8 py-6">
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-green-100 p-6 mb-6">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  Location Dashboard
-                </h1>
-                <p className="text-green-700 font-medium">
-                  {filteredItems.length} of {items.length}{" "}
-                  {items.length === 1 ? "location" : "locations"}
-                  {searchQuery && " (filtered)"}
-                </p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-                {/* Search Bar */}
-                <div className="relative flex-1 lg:w-80">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg
-                      className="h-5 w-5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Search locations..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 outline-none"
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                    >
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-
-                {/* Sort Button */}
-                <SortMenuButton currentSort={sortBy} onSortChange={setSortBy} />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-green-200 border-t-green-600 mb-4"></div>
-                  <p className="text-green-700 font-medium">
-                    Loading locations...
-                  </p>
-                </div>
-              </div>
-            ) : filteredItems.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-green-100 p-8">
-                  <div className="w-24 h-24 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
-                    <svg
-                      className="w-12 h-12 text-green-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {searchQuery ? "No matching locations" : "No locations yet"}
-                  </h3>
-                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                    {searchQuery
-                      ? "Try adjusting your search terms or clear the search to see all locations."
-                      : "Get started by adding your first location. Click the green plus button to begin."}
-                  </p>
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery("")}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200"
-                    >
-                      Clear Search
-                    </button>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {filteredItems.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="transform transition-all duration-300 hover:scale-[1.02]"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <DashboardItemCard
-                      item={item}
-                      onDelete={() => handleDelete(item)}
-                      onUpdate={handleUpdate}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+      {loading && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-white/80">
+          <div className="flex flex-col items-center">
+            <svg
+              className="animate-spin h-12 w-12 text-green-600 mb-2"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-80"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v3a5 5 0 100 10v3a8 8 0 01-8-8z"
+              />
+            </svg>
+            <span className="text-green-800 font-semibold text-lg">
+              Loading Locations…
+            </span>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* FAB */}
-      <div className="fixed bottom-6 right-6 z-40">
-        {!isSheetOpen && (
-          <FloatingAddButton onClick={() => setIsSheetOpen(true)} />
-        )}
-      </div>
+      {!loading && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-2 md:px-6 mb-24">
+          {filteredItems.length > 0 ? (
+            filteredItems.map((item) => (
+              <div key={item.id} className="h-full">
+                <DashboardItemCard
+                  item={item}
+                  onDelete={() => handleDelete(item)}
+                />
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center text-gray-400 py-12 text-lg">
+              No locations found.
+            </div>
+          )}
+        </div>
+      )}
 
-      {/* Add Modal - Full Screen */}
+      <FloatingAddButton onClick={() => setIsSheetOpen(true)} />
+
       {isSheetOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 backdrop-blur-sm">
-          <div className="w-full h-full overflow-y-auto">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+          aria-modal="true"
+          role="dialog"
+        >
+          <div
+            ref={modalRef}
+            className="relative bg-white rounded-2xl shadow-2xl border border-green-100 w-[98vw] max-w-4xl h-[92vh] max-h-[98vh] flex flex-col p-1 sm:p-8 animate-fadeIn overflow-y-auto no-scrollbar"
+            style={{ minWidth: 320, minHeight: 420 }}
+            tabIndex={-1}
+          >
             <AddLocationForm
               onClose={() => setIsSheetOpen(false)}
               onAdd={handleAdd}
@@ -309,6 +207,16 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.97);}
+          to { opacity: 1; transform: scale(1);}
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s cubic-bezier(.4,0,.2,1);
+        }
+    `}</style>
     </div>
   );
 }

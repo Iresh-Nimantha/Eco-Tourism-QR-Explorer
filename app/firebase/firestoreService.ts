@@ -10,13 +10,18 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
-export async function addLocationToFirebase(data: {
+// Type for location data
+export interface LocationData {
   locationName: string;
   description: string;
   customFilename: string;
   credit: string;
   tags: string;
-}) {
+  imageUrl: string;
+  createdAt?: any;
+}
+
+export async function addLocationToFirebase(data: LocationData) {
   const docRef = await addDoc(collection(db, "locations"), {
     ...data,
     createdAt: Timestamp.now(),

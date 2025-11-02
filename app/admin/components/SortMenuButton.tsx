@@ -1,74 +1,45 @@
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 
-type SortOption = "name-asc" | "name-desc" | "date-newest" | "date-oldest";
-
-interface SortMenuButtonProps {
-  currentSort: SortOption;
-  onSortChange: (sort: SortOption) => void;
-}
-
-const sortOptions = [
-  { value: "date-newest" as const, label: "Newest First", icon: "📅" },
-  { value: "date-oldest" as const, label: "Oldest First", icon: "📅" },
-  { value: "name-asc" as const, label: "Name A-Z", icon: "🔤" },
-  { value: "name-desc" as const, label: "Name Z-A", icon: "🔤" },
+const SORT_OPTIONS = [
+  { label: "Name (A-Z)", value: "name" },
+  { label: "Newest First", value: "newest" },
+  { label: "Oldest First", value: "oldest" },
+  { label: "Tags", value: "tags" },
+  { label: "Credit", value: "credit" },
 ];
 
+type SortMenuButtonProps = {
+  sort: string;
+  onSortChange: (s: string) => void;
+  search: string;
+  onSearchChange: (v: string) => void;
+  count: number;
+};
+
 export default function SortMenuButton({
-  currentSort,
+  sort,
   onSortChange,
+  search,
+  onSearchChange,
+  count,
 }: SortMenuButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
-  const currentSortOption = sortOptions.find(
-    (option) => option.value === currentSort
-  );
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleEscape);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, [isOpen]);
-
-  const handleSortSelect = (sortValue: SortOption) => {
-    onSortChange(sortValue);
-    setIsOpen(false);
-  };
-
   return (
-    <div className="relative">
-      <button
-        ref={buttonRef}
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-4 py-2 bg-white border-2 border-green-200 text-green-700 rounded-xl hover:bg-green-50 hover:border-green-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-200 shadow-sm"
-      >
+    <div
+      className="
+        sticky top-0 z-30 w-full
+        flex flex-col md:flex-row
+        justify-center items-center gap-3
+        bg-white/95 backdrop-blur-md
+        border-b border-green-100 shadow-sm
+        py-3 px-4 md:px-8
+        transition
+      "
+      style={{ minHeight: 64 }}
+    >
+      {/* Location Count */}
+      <div className="mb-1 md:mb-0 md:mr-4 flex-shrink-0 flex items-center text-sm sm:text-base font-semibold text-green-700">
         <svg
-          className="w-5 h-5"
+          className="w-5 h-5 mr-1 text-green-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -77,66 +48,61 @@ export default function SortMenuButton({
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth={2}
-            d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+            d="M3 17v-2a4 4 0 014-4h10a4 4 0 014 4v2M8 7a4 4 0 118 0 4 4 0 01-8 0z"
           />
         </svg>
-        <span className="text-sm font-medium">Sort</span>
-        <svg
-          className={`w-4 h-4 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
+        {count} {count === 1 ? "location" : "locations"}
+      </div>
 
-      {isOpen && (
-        <div
-          ref={dropdownRef}
-          className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 animate-in slide-in-from-top-2 duration-200"
+      {/* Search input */}
+      <div className="w-full md:max-w-sm">
+        <input
+          type="text"
+          placeholder="Search anything…"
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="
+            w-full border border-green-200 bg-gray-50
+            px-4 py-2 rounded-lg
+            text-base text-gray-700
+            placeholder:text-gray-400
+            focus:ring-2 focus:ring-green-100 focus:border-green-500
+            outline-none
+            shadow-sm
+            transition
+          "
+          aria-label="Search Locations"
+        />
+      </div>
+
+      {/* Sort menu */}
+      <div className="w-full md:w-auto">
+        <select
+          value={sort}
+          onChange={(e) => onSortChange(e.target.value)}
+          className="
+            w-full md:w-auto
+            border border-green-200
+            rounded-full
+            px-6 py-2
+            text-gray-700 font-semibold
+            bg-white
+            shadow-sm
+            transition
+            hover:bg-green-50 focus:ring-2 focus:ring-green-100 focus:border-green-500
+            outline-none
+            cursor-pointer
+          "
+          aria-label="Sort Locations"
         >
-          <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
-            Sort by
-          </div>
-          {sortOptions.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => handleSortSelect(option.value)}
-              className={`w-full text-left px-4 py-2 text-sm hover:bg-green-50 transition-colors duration-150 flex items-center space-x-3 ${
-                currentSort === option.value
-                  ? "bg-green-50 text-green-700 font-medium"
-                  : "text-gray-700"
-              }`}
-            >
-              <span className="text-base">{option.icon}</span>
-              <span className="flex-1">{option.label}</span>
-              {currentSort === option.value && (
-                <svg
-                  className="w-4 h-4 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              )}
-            </button>
+          <option value="">Sort by…</option>
+          {SORT_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
           ))}
-        </div>
-      )}
+        </select>
+      </div>
     </div>
   );
 }
