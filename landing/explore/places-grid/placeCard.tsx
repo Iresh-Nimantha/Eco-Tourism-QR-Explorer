@@ -20,13 +20,19 @@ export default function PlaceCard({ place, onViewDetails }: Props) {
     e.stopPropagation(); // prevent parent click, if any
     if (onViewDetails) onViewDetails(place);
   };
+  const GITHUB_REPO = "Iresh-Nimantha/test-img-upload";
+  const GITHUB_BRANCH = "main";
+  const GITHUB_IMAGES_PATH = "images";
 
+  function getGithubImageUrl(filename: string) {
+    return `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/${GITHUB_IMAGES_PATH}/${filename}`;
+  }
   return (
     <div className="w-full bg-white border border-gray-200 rounded-2xl shadow-md hover:shadow-xl hover:border-green-300 transition-all duration-300 ease-in-out overflow-hidden group">
       {/* Image */}
       <div className="relative overflow-hidden">
         <img
-          src={imageSrc}
+          src={getGithubImageUrl(place.customFilename)}
           alt={place.locationName}
           className="w-full h-40 sm:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"
