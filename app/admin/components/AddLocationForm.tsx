@@ -1,7 +1,11 @@
 "use client";
+
 import React, { useRef, useState } from "react";
-import { addLocationToFirebase } from "../../firebase/firestoreService"; // adjust import!
 import Swal from "sweetalert2";
+import {
+  addLocationToFirebase,
+  type LocationData,
+} from "../../firebase/firestoreService";
 
 type FormState = {
   locationName: string;
@@ -54,11 +58,8 @@ export default function AddLocationForm({
     if (file) {
       const newName = generateImageName(file);
       setGeneratedName(newName);
-      // Create preview URL
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
+      reader.onload = (e) => setImagePreview(e.target?.result as string);
       reader.readAsDataURL(file);
     } else {
       setGeneratedName("");
@@ -106,30 +107,43 @@ export default function AddLocationForm({
       });
       return;
     }
+
     setLoading(true);
+
     try {
-      // 1. Upload the image file
+      // Upload image to API
       const formData = new FormData();
       formData.append("file", image);
       formData.append("customFilename", generatedName);
+      formData.append("locationName", form.locationName);
+      formData.append("description", form.description);
+      formData.append("tags", form.tags);
+      formData.append("credit", form.credit);
+
       const imgRes = await fetch("/api/adminupload", {
         method: "POST",
         body: formData,
       });
+
       const imgResult = await imgRes.json();
       if (!imgRes.ok || !imgResult.success)
         throw new Error(
           "Image upload failed: " + (imgResult.error || imgRes.statusText)
         );
-      // 2. Save metadata to Firestore
+
+      const imageUrl = imgResult.imageUrl;
+
       const locationDoc = {
         locationName: form.locationName,
         description: form.description,
         customFilename: generatedName,
         credit: form.credit,
         tags: form.tags,
+        imageUrl,
       };
+      console.log("Location Document:", imageUrl);
       await addLocationToFirebase(locationDoc);
+
       await Swal.fire({
         title: "Location Added!",
         text: "Location and image uploaded successfully!",
@@ -139,6 +153,7 @@ export default function AddLocationForm({
         color: "#374151",
         customClass: { popup: "rounded-xl shadow-2xl" },
       });
+
       setImage(null);
       setImagePreview("");
       setGeneratedName("");
@@ -235,7 +250,6 @@ export default function AddLocationForm({
                 disabled={loading}
               />
             </div>
-
             <div>
               <label className="text-green-900 font-semibold block mb-2 text-base sm:text-lg">
                 Image Upload <span className="text-red-500">*</span>
@@ -267,7 +281,6 @@ export default function AddLocationForm({
                   onChange={handleImageSelect}
                   disabled={loading}
                 />
-
                 <div className="py-8 px-4 w-full flex flex-col items-center text-center">
                   {imagePreview ? (
                     <div className="space-y-4">
@@ -318,8 +331,6 @@ export default function AddLocationForm({
                 </div>
               </div>
             </div>
-
-            {/* Button Row */}
             <div className="flex flex-col sm:flex-row gap-3 mt-1">
               <button
                 type="submit"
