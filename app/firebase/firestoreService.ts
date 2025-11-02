@@ -1,5 +1,5 @@
 // firebase/firestoreService.ts
-import { db } from "../lib/firebase";
+import { db } from "./clientApp";
 import {
   collection,
   addDoc,
@@ -16,6 +16,7 @@ export async function addLocationToFirebase(data: {
   customFilename: string;
   credit: string;
   tags: string;
+  imageUrl: string;
 }) {
   const docRef = await addDoc(collection(db, "locations"), {
     ...data,
