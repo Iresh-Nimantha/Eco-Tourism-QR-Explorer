@@ -16,6 +16,7 @@ async function checkFileExists(filename: string) {
   return response.ok;
 }
 
+
 export async function POST(request: NextRequest) {
   const formData = await request.formData();
   const file = formData.get("file") as File;
