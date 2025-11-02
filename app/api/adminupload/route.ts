@@ -1,48 +1,95 @@
-import { writeFile } from "fs/promises";
-import path from "path";
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
 
-// Helper: Simple filename sanitizer
-function sanitizeFilename(name: string) {
-  return name.replace(/[^a-zA-Z0-9._-]/g, "_");
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN as string;
+const REPO = "Iresh-Nimantha/test-img-upload";
+const BRANCH = "main";
+const PATH = "images"; // repo folder
+
+// Function to check if file exists in GitHub
+async function checkFileExists(filename: string) {
+  const url = `https://api.github.com/repos/${REPO}/contents/${PATH}/${filename}`;
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `token ${GITHUB_TOKEN}`,
+    },
+  });
+  return response.ok;
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const formData = await request.formData();
-    const file = formData.get("file") as File | null;
-    let customFilename = formData.get("customFilename") as string | null;
+  const formData = await request.formData();
+  const file = formData.get("file") as File;
+  const customFilename = formData.get("customFilename") as string;
 
-    if (!file || !customFilename) {
+  // Get additional location data
+  const locationName = formData.get("locationName") as string;
+  const description = formData.get("description") as string;
+  const tags = formData.get("tags") as string;
+  const credit = formData.get("credit") as string;
+
+  if (!file || !customFilename) {
+    return NextResponse.json(
+      { success: false, error: "Missing file or filename" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    // Convert file to buffer
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+    const base64Content = buffer.toString("base64");
+
+    // GitHub API upload
+    const githubUrl = `https://api.github.com/repos/${REPO}/contents/${PATH}/${customFilename}`;
+    const githubRes = await fetch(githubUrl, {
+      method: "PUT",
+      headers: {
+        Authorization: `token ${GITHUB_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: `Upload ${customFilename}`,
+        content: base64Content,
+        branch: BRANCH,
+      }),
+    });
+
+    if (!githubRes.ok) {
+      const data = await githubRes.json().catch(() => ({}));
+      console.error("GitHub error:", data);
       return NextResponse.json(
-        { error: "No file or filename" },
-        { status: 400 }
+        { success: false, error: data.message || "GitHub upload failed" },
+        { status: 500 }
       );
     }
 
-    customFilename = sanitizeFilename(customFilename);
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Ensure the uploads directory exists
-    const uploadDir = path.join(process.cwd(), "public/uploads");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+    const data = await githubRes.json();
+    if (!data || !data.content) {
+      return NextResponse.json(
+        { success: false, error: "Invalid GitHub response" },
+        { status: 500 }
+      );
     }
 
-    // Save with the custom filename
-    const savePath = path.join(uploadDir, customFilename);
-    await writeFile(savePath, buffer);
+    // Get permanent GitHub image URL
+    const imageUrl = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${PATH}/${customFilename}`;
+    const githubFileUrl = data.content.html_url || "";
 
-    return NextResponse.json({
-      success: true,
-      url: `/uploads/${customFilename}`,
-    });
-  } catch (e: any) {
     return NextResponse.json(
-      { success: false, error: e.message },
+      {
+        success: true,
+        imageUrl,
+        githubUrl: githubFileUrl,
+        sha: data.content.sha,
+        message: "Image uploaded successfully to GitHub",
+      },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error("Upload error:", error);
+    return NextResponse.json(
+      { success: false, error: error.message },
       { status: 500 }
     );
   }
