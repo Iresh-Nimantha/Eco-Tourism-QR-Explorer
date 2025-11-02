@@ -2,6 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import Swal from "sweetalert2";
 import UpdateLocationForm from "./UpdateLocationForm";
 
+// Add at top of your file (outside the component)
+const GITHUB_REPO = "Iresh-Nimantha/test-img-upload";
+const GITHUB_BRANCH = "main";
+const GITHUB_IMAGES_PATH = "images";
+function getGithubImageUrl(filename: string) {
+  return `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/${GITHUB_IMAGES_PATH}/${filename}`;
+}
+
 // --- Types
 type Location = {
   id: string;
@@ -248,7 +256,7 @@ export default function DashboardItemCard({
                 {itemState.customFilename && !imgErr ? (
                   <div className="relative group/image overflow-hidden rounded-xl">
                     <img
-                      src={`/uploads/${itemState.customFilename}`}
+                      src={getGithubImageUrl(itemState.customFilename)}
                       alt={itemState.locationName}
                       className="w-full h-48 lg:h-56 object-cover transition-transform duration-300 group-hover/image:scale-110"
                       onError={() => setImgErr(true)}
